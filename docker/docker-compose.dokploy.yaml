@@ -40,7 +40,7 @@ x-shared-api-worker-config: &shared-api-worker-config
       required: false
   networks:
     - ssrf_proxy_network
-    - default
+    - ai-docs-net
   restart: always
 
 x-shared-worker-config: &shared-worker-config
@@ -65,7 +65,7 @@ x-shared-worker-config: &shared-worker-config
       required: false
   networks:
     - ssrf_proxy_network
-    - default
+    - ai-docs-net
   restart: always
 
 x-shared-worker-beat-config: &shared-worker-beat-config
@@ -90,7 +90,7 @@ x-shared-worker-beat-config: &shared-worker-beat-config
       required: false
   networks:
     - ssrf_proxy_network
-    - default
+    - ai-docs-net
   restart: always
 
 services:
@@ -145,7 +145,7 @@ services:
       start_period: 30s
     networks:
       - ssrf_proxy_network
-      - default
+      - ai-docs-net
 
   # worker service
   # The Celery worker for processing all queues (dataset, workflow, mail, etc.)
@@ -178,7 +178,7 @@ services:
       disable: ${COMPOSE_WORKER_HEALTHCHECK_DISABLED:-true}
     networks:
       - ssrf_proxy_network
-      - default
+      - ai-docs-net
 
   # worker_beat service
   # Celery beat for scheduling periodic tasks.
@@ -203,7 +203,7 @@ services:
       disable: ${COMPOSE_WORKER_HEALTHCHECK_DISABLED:-true}
     networks:
       - ssrf_proxy_network
-      - default
+      - ai-docs-net
 
   # Frontend web application.
   web:
@@ -243,7 +243,7 @@ services:
       ENABLE_WEBSITE_FIRECRAWL: ${ENABLE_WEBSITE_FIRECRAWL:-true}
       ENABLE_WEBSITE_WATERCRAWL: ${ENABLE_WEBSITE_WATERCRAWL:-true}
     networks:
-      - default
+      - ai-docs-net
 
   # The PostgreSQL database.
   db_postgres:
@@ -280,7 +280,7 @@ services:
       timeout: 3s
       retries: 60
     networks:
-      - default
+      - ai-docs-net
 
   # The redis cache.
   redis:
@@ -300,7 +300,7 @@ services:
           "redis-cli -a ${REDIS_PASSWORD:-difyai123456} ping | grep -q PONG",
         ]
     networks:
-      - default
+      - ai-docs-net
 
   # The DifySandbox
   sandbox:
@@ -333,6 +333,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8194/health"]
     networks:
       - ssrf_proxy_network
+      - ai-docs-net
 
   # plugin daemon
   plugin_daemon:
@@ -353,7 +354,7 @@ services:
         required: false
     networks:
       - ssrf_proxy_network
-      - default
+      - ai-docs-net
     environment:
       DB_DATABASE: ${DB_PLUGIN_DATABASE:-dify_plugin}
       DB_SSL_MODE: ${DB_SSL_MODE:-disable}
@@ -430,7 +431,7 @@ services:
       SSRF_PROXY_ALLOW_PRIVATE_DOMAINS: ${SSRF_PROXY_ALLOW_PRIVATE_DOMAINS:-}
     networks:
       - ssrf_proxy_network
-      - default
+      - ai-docs-net
 
   # The internal nginx reverse proxy (single ingress for Traefik).
   # Traefik terminates TLS and forwards to nginx:80, so keep
@@ -470,7 +471,7 @@ services:
       - api
       - web
     networks:
-      - default
+      - ai-docs-net
 
   # The Weaviate vector store (Dify default vector database).
   weaviate:
@@ -495,7 +496,7 @@ services:
       ENABLE_TOKENIZER_KAGOME_JA: ${WEAVIATE_ENABLE_TOKENIZER_KAGOME_JA:-false}
       ENABLE_TOKENIZER_KAGOME_KR: ${WEAVIATE_ENABLE_TOKENIZER_KAGOME_KR:-false}
     networks:
-      - default
+      - ai-docs-net
 
 networks:
   # Internal-only network between sandbox, api and ssrf_proxy (no outbound).
@@ -503,6 +504,10 @@ networks:
   ssrf_proxy_network:
     driver: bridge
     internal: true
+
+  ai-docs-net:
+    external: true
+    name: ai-docs-net
 
 volumes:
   app_storage:
